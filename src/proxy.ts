@@ -3,7 +3,7 @@ import { COOKIE_NAME, verifySession } from "@/lib/auth";
 
 const PUBLIC = ["/login", "/api/login", "/manifest.webmanifest", "/favicon.ico", "/icon-192.png", "/icon-512.png"];
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   if (PUBLIC.includes(pathname)) return NextResponse.next();
   const token = req.cookies.get(COOKIE_NAME)?.value ?? "";
