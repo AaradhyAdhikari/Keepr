@@ -4,7 +4,7 @@ import { extractLinks } from "./links";
 import type { ReelView } from "./search";
 
 const COLS = `r.id, r.url, r.caption, r.thumbnail_url, c.name as category, r.summary, r.tags,
-  r.github_links, r.youtube_links, r.status`;
+  r.github_links, r.youtube_links, r.web_links, r.status`;
 
 export async function listCollections(): Promise<{ id: number; name: string; count: number }[]> {
   const rows = await getSql()`
@@ -71,7 +71,7 @@ export async function updateReel(
     const cid = await upsertCategory(r.category);
     await sql`update reels set caption = ${caption}, category_id = ${cid}, confidence = ${r.confidence},
       summary = ${r.summary}, tags = ${r.tags}, github_links = ${links.github},
-      youtube_links = ${links.youtube}, status = ${r.status} where id = ${id}`;
+      youtube_links = ${links.youtube}, web_links = ${links.web}, status = ${r.status} where id = ${id}`;
     return { status: r.status, category: r.category };
   }
   return { status: "unchanged", category: REVIEW };

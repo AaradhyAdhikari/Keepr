@@ -12,6 +12,7 @@ export type ReelRow = {
   tags: string[];
   github_links: string[];
   youtube_links: string[];
+  web_links: string[];
   status: "sorted" | "review" | "pending";
 };
 
@@ -51,9 +52,9 @@ export function pgStore(): Store {
     async insertReel(r) {
       const rows = await sql`
         insert into reels (url, caption, thumbnail_url, category_id, confidence, summary, tags,
-                           github_links, youtube_links, status)
+                           github_links, youtube_links, web_links, status)
         values (${r.url}, ${r.caption}, ${r.thumbnail_url}, ${r.category_id}, ${r.confidence},
-                ${r.summary}, ${r.tags}, ${r.github_links}, ${r.youtube_links}, ${r.status})
+                ${r.summary}, ${r.tags}, ${r.github_links}, ${r.youtube_links}, ${r.web_links}, ${r.status})
         on conflict (url) do update set url = excluded.url
         returning id`;
       return rows[0].id as number;
@@ -131,6 +132,7 @@ export async function ingestReel(
     tags: result.tags,
     github_links: links.github,
     youtube_links: links.youtube,
+    web_links: links.web,
     status: result.status,
   });
   return { id, status: result.status, duplicate: false, category: result.category };

@@ -13,6 +13,7 @@ const base: ReelView = {
   tags: [],
   github_links: [],
   youtube_links: [],
+  web_links: [],
   status: "sorted",
 };
 
@@ -46,5 +47,18 @@ describe("ReelCard", () => {
     const html = renderToStaticMarkup(<ReelCard reel={{ ...base, caption: "<script>x</script>" }} />);
     expect(html).not.toContain("<script>");
     expect(() => renderToStaticMarkup(<ReelCard reel={{ ...base, caption: null }} />)).not.toThrow();
+  });
+
+  it("adds a website button per web link, labelled with the host", () => {
+    const html = renderToStaticMarkup(
+      <ReelCard reel={{ ...base, web_links: ["https://twin-desk.vercel.app", "https://gittrend.io/x"] }} />,
+    );
+    expect(hrefs(html)).toEqual([
+      "https://www.instagram.com/reel/ABC123/",
+      "https://twin-desk.vercel.app",
+      "https://gittrend.io/x",
+    ]);
+    expect(html).toContain("twin-desk.vercel.app");
+    expect(html).toContain("gittrend.io");
   });
 });

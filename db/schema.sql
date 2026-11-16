@@ -16,10 +16,12 @@ create table if not exists reels (
   tags text[] not null default '{}',
   github_links text[] not null default '{}',
   youtube_links text[] not null default '{}',
+  web_links text[] not null default '{}',
   status text not null check (status in ('sorted','review','pending')),
   search tsvector,
   created_at timestamptz not null default now()
 );
+alter table reels add column if not exists web_links text[] not null default '{}';
 create index if not exists reels_search_idx on reels using gin (search);
 create index if not exists reels_category_idx on reels (category_id);
 

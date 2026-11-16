@@ -20,6 +20,14 @@ const pill: React.CSSProperties = {
   textDecoration: "none",
 };
 
+function hostOf(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+}
+
 export default function ReelCard({ reel, children }: { reel: ReelView; children?: ReactNode }) {
   const caption = (reel.caption ?? "").slice(0, 160);
   return (
@@ -49,6 +57,11 @@ export default function ReelCard({ reel, children }: { reel: ReelView; children?
         {reel.youtube_links.map((l) => (
           <a key={l} href={l} target="_blank" rel="noopener noreferrer" style={pill}>
             ▶ YouTube
+          </a>
+        ))}
+        {(reel.web_links ?? []).map((l) => (
+          <a key={l} href={l} target="_blank" rel="noopener noreferrer" style={pill}>
+            🔗 {hostOf(l)}
           </a>
         ))}
       </div>

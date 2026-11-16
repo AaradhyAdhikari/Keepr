@@ -8,6 +8,22 @@ function urlsIn(text: string): string[] {
   return (text.match(/https?:\/\/[^\s<>"']+/gi) ?? []).map((u) => u.replace(TRAILING, ""));
 }
 
+const TLDS = "com|io|ai|dev|app|org|net|co|in|so|tech|xyz|gg|fm";
+const BARE = new RegExp(`(?<![@\\w./-])((?:www\\.)?[a-z0-9][a-z0-9-]*(?:\\.[a-z0-9-]+)*\\.(?:${TLDS}))(?![\\w@-])(\\/[^\\s<>"']*)?`, "gi");
+const NOT_SITES = /^(b|m|e|i)\.(tech|g|e)$/i;
+
+function bareDomains(text: string): string[] {
+  // strip full URLs and emails first so they are not double counted
+  const rest = text.replace(/https?:\/\/[^\s<>"']+/gi, " ").replace(/[\w.+-]+@[\w.-]+/g, " ");
+  const out: string[] = [];
+  for (const m of rest.matchAll(BARE)) {
+    const host = m[1];
+    if (NOT_SITES.test(host)) continue;
+    out.push(`https://${host}${(m[2] ?? "").replace(TRAILING, "")}`);
+  }
+  return out;
+}
+
 export function canonicalReelUrl(input: string): string | null {
   for (const raw of urlsIn(input ?? "")) {
     let u: URL;
@@ -24,10 +40,11 @@ export function canonicalReelUrl(input: string): string | null {
   return null;
 }
 
-export function extractLinks(caption: string): { github: string[]; youtube: string[] } {
+export function extractLinks(caption: string): { github: string[]; youtube: string[]; web: string[] } {
   const github: string[] = [];
   const youtube: string[] = [];
-  for (const raw of urlsIn(caption ?? "")) {
+  const web: string[] = [];
+  for (const raw of [...urlsIn(caption ?? ""), ...bareDomains(caption ?? "")]) {
     let u: URL;
     try {
       u = new URL(raw);
@@ -44,7 +61,9 @@ export function extractLinks(caption: string): { github: string[]; youtube: stri
       const v = u.searchParams.get("v");
       if (u.pathname === "/watch" && v) youtube.push(`https://www.youtube.com/watch?v=${v}`);
       else if (u.pathname.startsWith("/shorts/")) youtube.push(`https://www.youtube.com${u.pathname}`);
+    } else if (host !== "instagram.com" && !host.endsWith(".cdninstagram.com")) {
+      web.push(raw);
     }
   }
-  return { github: dedupe(github), youtube: dedupe(youtube) };
+  return { github: dedupe(github), youtube: dedupe(youtube), web: dedupe(web) };
 }

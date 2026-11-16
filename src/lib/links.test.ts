@@ -32,7 +32,18 @@ describe("extractLinks", () => {
     expect(r.youtube).toEqual(["https://www.youtube.com/watch?v=abc123"]);
   });
   it("returns empty arrays for no links", () => {
-    expect(extractLinks("")).toEqual({ github: [], youtube: [] });
-    expect(extractLinks("just words 🔥")).toEqual({ github: [], youtube: [] });
+    expect(extractLinks("")).toEqual({ github: [], youtube: [], web: [] });
+    expect(extractLinks("just words 🔥")).toEqual({ github: [], youtube: [], web: [] });
+  });
+
+  it("collects other websites as web links, bare domains included, without false positives", () => {
+    const r = extractLinks(
+      "try https://twin-desk.vercel.app, also gittrend.io and verci.xyz. B.Tech students! https://www.instagram.com/reel/ABC/ email me@site.com",
+    );
+    expect(r.web).toEqual(["https://twin-desk.vercel.app", "https://gittrend.io", "https://verci.xyz"]);
+  });
+  it("keeps github and youtube out of web", () => {
+    const r = extractLinks("https://github.com/a/b https://youtu.be/abc12345678 https://example.com/x");
+    expect(r.web).toEqual(["https://example.com/x"]);
   });
 });

@@ -2,7 +2,7 @@
 
 Auto-sort and search your saved Instagram reels.
 
-Share a reel to Keepr from your phone and it reads the caption, files the reel into the right collection (creating a new one when nothing fits), and pulls out any GitHub or YouTube links so you can open them in one tap. Search by what you remember ("breakfast recipes", "r&b music"). Tapping a reel opens it on Instagram.
+Share a reel to Keepr from your phone and it reads the caption, files the reel into the right collection (creating a new one when nothing fits), and pulls out any GitHub, YouTube or website links so you can open them in one tap. Search by what you remember ("breakfast recipes", "r&b music"). Tapping a reel opens it on Instagram.
 
 ## How it works
 
