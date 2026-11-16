@@ -34,6 +34,9 @@ const sorted = (category: string, isNew = true): ClassifyResult => ({
   confidence: 0.9,
   summary: "s",
   tags: ["t"],
+  kind: "other",
+  title: null,
+  subtitle: null,
   status: "sorted",
 });
 
@@ -104,10 +107,27 @@ describe("ingestReel", () => {
       confidence: 0,
       summary: "",
       tags: [],
+      kind: "other",
+      title: null,
+      subtitle: null,
       status: "pending",
     }));
     const r = await ingestReel({ url: "https://www.instagram.com/reel/F1/", caption: "hello there" }, { store, classify });
     expect(r.status).toBe("pending");
     expect(store.reels).toHaveLength(1);
+  });
+
+  it("stores what the reel is about so the app can offer Spotify/Netflix/Maps buttons", async () => {
+    const store = memoryStore();
+    const classify = vi.fn(async (): Promise<ClassifyResult> => ({
+      ...sorted("Music"),
+      kind: "music",
+      title: "Blinding Lights",
+      subtitle: "The Weeknd",
+    }));
+    await ingestReel({ url: "https://www.instagram.com/reel/SONG1/", caption: "this song" }, { store, classify });
+    expect(store.reels[0].kind).toBe("music");
+    expect(store.reels[0].entity_title).toBe("Blinding Lights");
+    expect(store.reels[0].entity_sub).toBe("The Weeknd");
   });
 });

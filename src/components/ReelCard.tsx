@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { ReelView } from "@/lib/search";
+import { actionLinks } from "@/lib/actions";
 
 const card: React.CSSProperties = {
   border: "1px solid #374151",
@@ -57,6 +58,12 @@ export default function ReelCard({ reel, children }: { reel: ReelView; children?
         {reel.youtube_links.map((l) => (
           <a key={l} href={l} target="_blank" rel="noopener noreferrer" style={pill}>
             ▶ YouTube
+          </a>
+        ))}
+        {actionLinks(reel.kind, reel.entity_title, reel.entity_sub).map((l) => (
+          <a key={l.url} href={l.url} target="_blank" rel="noopener noreferrer" style={{ ...pill, background: "#be185d" }}>
+            {l.label === "Google Maps" ? "📍 " : "▶ "}
+            {l.label === "Google Maps" ? "Open in Google Maps" : `Open in ${l.label}`}
           </a>
         ))}
         {(reel.web_links ?? []).map((l) => (

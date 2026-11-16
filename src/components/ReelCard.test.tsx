@@ -14,6 +14,9 @@ const base: ReelView = {
   github_links: [],
   youtube_links: [],
   web_links: [],
+  kind: "other",
+  entity_title: null,
+  entity_sub: null,
   status: "sorted",
 };
 
@@ -60,5 +63,25 @@ describe("ReelCard", () => {
     ]);
     expect(html).toContain("twin-desk.vercel.app");
     expect(html).toContain("gittrend.io");
+  });
+
+  it("shows Spotify, Apple Music and YouTube buttons for a music reel", () => {
+    const html = renderToStaticMarkup(
+      <ReelCard reel={{ ...base, kind: "music", entity_title: "Blinding Lights", entity_sub: "The Weeknd" }} />,
+    );
+    expect(hrefs(html)).toEqual([
+      "https://www.instagram.com/reel/ABC123/",
+      "https://open.spotify.com/search/Blinding%20Lights%20The%20Weeknd",
+      "https://music.apple.com/search?term=Blinding%20Lights%20The%20Weeknd",
+      "https://www.youtube.com/results?search_query=Blinding%20Lights%20The%20Weeknd",
+    ]);
+  });
+
+  it("shows a Google Maps button for a restaurant and none for other reels", () => {
+    const place = renderToStaticMarkup(
+      <ReelCard reel={{ ...base, kind: "restaurant", entity_title: "We Idliwaale", entity_sub: "Pune" }} />,
+    );
+    expect(hrefs(place)[1]).toContain("google.com/maps/search");
+    expect(hrefs(renderToStaticMarkup(<ReelCard reel={base} />))).toHaveLength(1);
   });
 });

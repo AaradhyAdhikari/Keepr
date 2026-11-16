@@ -13,6 +13,9 @@ export type ReelRow = {
   github_links: string[];
   youtube_links: string[];
   web_links: string[];
+  kind: string;
+  entity_title: string | null;
+  entity_sub: string | null;
   status: "sorted" | "review" | "pending";
 };
 
@@ -52,9 +55,9 @@ export function pgStore(): Store {
     async insertReel(r) {
       const rows = await sql`
         insert into reels (url, caption, thumbnail_url, category_id, confidence, summary, tags,
-                           github_links, youtube_links, web_links, status)
+                           github_links, youtube_links, web_links, kind, entity_title, entity_sub, status)
         values (${r.url}, ${r.caption}, ${r.thumbnail_url}, ${r.category_id}, ${r.confidence},
-                ${r.summary}, ${r.tags}, ${r.github_links}, ${r.youtube_links}, ${r.web_links}, ${r.status})
+                ${r.summary}, ${r.tags}, ${r.github_links}, ${r.youtube_links}, ${r.web_links}, ${r.kind}, ${r.entity_title}, ${r.entity_sub}, ${r.status})
         on conflict (url) do update set url = excluded.url
         returning id`;
       return rows[0].id as number;
@@ -116,7 +119,7 @@ export async function ingestReel(
   const links = extractLinks(caption ?? "");
   let result: ClassifyResult;
   if (!caption) {
-    result = { category: REVIEW, isNew: false, confidence: 0, summary: "", tags: [], status: "pending" };
+    result = { category: REVIEW, isNew: false, confidence: 0, summary: "", tags: [], kind: "other", title: null, subtitle: null, status: "pending" };
   } else {
     result = await classify({ caption, links }, await store.listCategoryNames());
   }
@@ -133,6 +136,9 @@ export async function ingestReel(
     github_links: links.github,
     youtube_links: links.youtube,
     web_links: links.web,
+    kind: result.kind,
+    entity_title: result.title,
+    entity_sub: result.subtitle,
     status: result.status,
   });
   return { id, status: result.status, duplicate: false, category: result.category };

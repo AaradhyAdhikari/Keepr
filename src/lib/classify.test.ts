@@ -72,4 +72,28 @@ describe("classifyReel", () => {
     const r = await classifyReel({ caption: "best r&b playlist", links: noLinks }, ["Music"], c);
     expect(r.category).toBe("Music");
   });
+
+  it("extracts what the reel is about: a song, a movie or a place", async () => {
+    const song = fake(json({ category: "Music", confidence: 0.9, summary: "x", tags: [], kind: "music", title: "Blinding Lights", subtitle: "The Weeknd" }));
+    const r1 = await classifyReel({ caption: "this song though", links: noLinks }, ["Music"], song);
+    expect([r1.kind, r1.title, r1.subtitle]).toEqual(["music", "Blinding Lights", "The Weeknd"]);
+
+    const place = fake(json({ category: "Restaurants", confidence: 0.9, summary: "x", tags: [], kind: "restaurant", title: "We Idliwaale", subtitle: "NIBM Road, Pune" }));
+    const r2 = await classifyReel({ caption: "dosas at We Idliwaale", links: noLinks }, [], place);
+    expect([r2.kind, r2.title]).toEqual(["restaurant", "We Idliwaale"]);
+  });
+
+  it("defaults to kind other with no title when the model gives none or an unknown kind", async () => {
+    const c = fake(json({ category: "Food", confidence: 0.9, summary: "x", tags: [], kind: "spaceship" }));
+    const r = await classifyReel({ caption: "some recipe here", links: noLinks }, ["Food"], c);
+    expect([r.kind, r.title, r.subtitle]).toEqual(["other", null, null]);
+  });
+
+  it("asks the model for kind/title in the prompt", async () => {
+    const c = fake(json({ category: "Food", confidence: 0.9, summary: "x", tags: [] }));
+    await classifyReel({ caption: "some recipe here", links: noLinks }, [], c);
+    const prompt = c.complete.mock.calls[0][0] as string;
+    expect(prompt).toContain("kind");
+    expect(prompt).toContain("title");
+  });
 });

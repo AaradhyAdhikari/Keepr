@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
+import type { Kind } from "./actions";
 
 export type ClassifierClient = { complete(prompt: string): Promise<string> };
 
@@ -9,6 +10,9 @@ export type ClassifyResult = {
   confidence: number;
   summary: string;
   tags: string[];
+  kind: Kind;
+  title: string | null;
+  subtitle: string | null;
   status: "sorted" | "review" | "pending";
 };
 
@@ -21,7 +25,19 @@ const Reply = z.object({
   confidence: z.number().min(0).max(1),
   summary: z.string().default(""),
   tags: z.array(z.string()).default([]),
+  kind: z.string().optional(),
+  title: z.string().nullish(),
+  subtitle: z.string().nullish(),
 });
+
+const KINDS: Kind[] = ["music", "movie", "restaurant", "other"];
+
+function entityOf(r: z.infer<typeof Reply>): { kind: Kind; title: string | null; subtitle: string | null } {
+  const kind = KINDS.includes(r.kind as Kind) ? (r.kind as Kind) : "other";
+  const title = r.title?.trim() || null;
+  if (kind === "other" || !title) return { kind: "other", title: null, subtitle: null };
+  return { kind, title, subtitle: r.subtitle?.trim() || null };
+}
 
 export function defaultClient(): ClassifierClient {
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -46,7 +62,7 @@ export function extractJson(text: string): unknown {
 }
 
 function reviewResult(status: "review" | "pending"): ClassifyResult {
-  return { category: REVIEW, isNew: false, confidence: 0, summary: "", tags: [], status };
+  return { category: REVIEW, isNew: false, confidence: 0, summary: "", tags: [], kind: "other", title: null, subtitle: null, status };
 }
 
 function buildPrompt(caption: string, links: { github: string[]; youtube: string[] }, existing: string[]) {
@@ -59,7 +75,10 @@ function buildPrompt(caption: string, links: { github: string[]; youtube: string
     "- confidence is 0 to 1: how sure you are about the category.",
     "- tags: 3-8 lowercase search keywords, including synonyms someone might search for.",
     "- summary: one short sentence.",
-    'Reply with ONLY JSON: {"category": string, "confidence": number, "summary": string, "tags": string[]}',
+    "- kind: 'music' if the reel is about a specific song, 'movie' for a specific movie or TV show, 'restaurant' for a specific restaurant, cafe or food place, otherwise 'other'.",
+    "- title: for music the song name, for movie the movie/show name, for restaurant the place name. null if you cannot tell.",
+    "- subtitle: music: the artist; movie: the release year; restaurant: area and city. null if unknown.",
+    'Reply with ONLY JSON: {"category": string, "confidence": number, "summary": string, "tags": string[], "kind": string, "title": string|null, "subtitle": string|null}',
     "",
     `Caption: ${caption}`,
     links.github.length ? `GitHub links: ${links.github.join(" ")}` : "",
@@ -86,7 +105,7 @@ export async function classifyReel(
     const category = match ?? parsed.category.trim();
     const tags = parsed.tags.map((t) => t.toLowerCase().trim()).filter(Boolean);
     if (parsed.confidence < MIN_CONFIDENCE) {
-      return { ...reviewResult("review"), confidence: parsed.confidence, summary: parsed.summary, tags };
+      return { ...reviewResult("review"), confidence: parsed.confidence, summary: parsed.summary, tags, ...entityOf(parsed) };
     }
     return {
       category,
@@ -94,6 +113,7 @@ export async function classifyReel(
       confidence: parsed.confidence,
       summary: parsed.summary,
       tags,
+      ...entityOf(parsed),
       status: "sorted",
     };
   } catch {

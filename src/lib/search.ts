@@ -12,6 +12,9 @@ export type ReelView = {
   github_links: string[];
   youtube_links: string[];
   web_links: string[];
+  kind: string;
+  entity_title: string | null;
+  entity_sub: string | null;
   status: "sorted" | "review" | "pending";
 };
 
@@ -22,7 +25,7 @@ export interface SearchStore {
 }
 
 const SELECT_COLS = `r.id, r.url, r.caption, r.thumbnail_url, c.name as category, r.summary, r.tags,
-  r.github_links, r.youtube_links, r.web_links, r.status`;
+  r.github_links, r.youtube_links, r.web_links, r.kind, r.entity_title, r.entity_sub, r.status`;
 
 export function pgSearchStore(): SearchStore {
   const sql = getSql();
