@@ -18,7 +18,7 @@ export default function Login() {
 
   return (
     <main style={{ maxWidth: 360, margin: "20vh auto", padding: 16 }}>
-      <h1>Reel Vault</h1>
+      <h1>Keepr</h1>
       <form onSubmit={submit}>
         <input
           type="password"

@@ -55,7 +55,7 @@ function Share() {
         </>
       )}
       <p style={{ marginTop: 24 }}>
-        <a href="/">Open Reel Vault</a>
+        <a href="/">Open Keepr</a>
       </p>
     </main>
   );

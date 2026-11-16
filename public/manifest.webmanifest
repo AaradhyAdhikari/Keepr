@@ -1,6 +1,6 @@
 {
-  "name": "Reel Vault",
-  "short_name": "Reel Vault",
+  "name": "Keepr",
+  "short_name": "Keepr",
   "description": "Auto-sorted, searchable library of your saved Instagram reels",
   "start_url": "/",
   "scope": "/",

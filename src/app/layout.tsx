@@ -3,7 +3,7 @@ import RegisterSW from "@/components/RegisterSW";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Reel Vault",
+  title: "Keepr",
   description: "Auto-sorted, searchable library of your saved Instagram reels",
   manifest: "/manifest.webmanifest",
 };
