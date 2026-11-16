@@ -15,7 +15,7 @@ const reel = (id: number, tags: string[], category = "Food"): ReelView => ({
   web_links: [],
   kind: "other",
   entity_title: null,
-  entity_sub: null,
+  entity_sub: null, providers: null,
   status: "sorted",
 });
 

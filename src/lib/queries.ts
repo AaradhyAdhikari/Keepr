@@ -4,7 +4,7 @@ import { extractLinks } from "./links";
 import type { ReelView } from "./search";
 
 const COLS = `r.id, r.url, r.caption, r.thumbnail_url, c.name as category, r.summary, r.tags,
-  r.github_links, r.youtube_links, r.web_links, r.kind, r.entity_title, r.entity_sub, r.status`;
+  r.github_links, r.youtube_links, r.web_links, r.kind, r.entity_title, r.entity_sub, r.providers, r.status`;
 
 export async function listCollections(): Promise<{ id: number; name: string; count: number }[]> {
   const rows = await getSql()`

@@ -1,6 +1,7 @@
 import { canonicalReelUrl, extractLinks } from "./links";
 import { classifyReel, REVIEW, type ClassifyResult } from "./classify";
 import { getSql } from "./db";
+import { lookupProviders as tmdbProviders } from "./availability";
 
 export type ReelRow = {
   url: string;
@@ -16,6 +17,7 @@ export type ReelRow = {
   kind: string;
   entity_title: string | null;
   entity_sub: string | null;
+  providers: string[] | null;
   status: "sorted" | "review" | "pending";
 };
 
@@ -32,6 +34,7 @@ export type IngestDeps = {
   store?: Store;
   classify?: typeof classifyReel | ((...args: Parameters<typeof classifyReel>) => Promise<ClassifyResult>);
   fetchMetadata?: (url: string) => Promise<Metadata | null>;
+  lookupProviders?: (title: string, year: string | null) => Promise<string[] | null>;
 };
 
 export function pgStore(): Store {
@@ -55,9 +58,9 @@ export function pgStore(): Store {
     async insertReel(r) {
       const rows = await sql`
         insert into reels (url, caption, thumbnail_url, category_id, confidence, summary, tags,
-                           github_links, youtube_links, web_links, kind, entity_title, entity_sub, status)
+                           github_links, youtube_links, web_links, kind, entity_title, entity_sub, providers, status)
         values (${r.url}, ${r.caption}, ${r.thumbnail_url}, ${r.category_id}, ${r.confidence},
-                ${r.summary}, ${r.tags}, ${r.github_links}, ${r.youtube_links}, ${r.web_links}, ${r.kind}, ${r.entity_title}, ${r.entity_sub}, ${r.status})
+                ${r.summary}, ${r.tags}, ${r.github_links}, ${r.youtube_links}, ${r.web_links}, ${r.kind}, ${r.entity_title}, ${r.entity_sub}, ${r.providers}, ${r.status})
         on conflict (url) do update set url = excluded.url
         returning id`;
       return rows[0].id as number;
@@ -124,6 +127,12 @@ export async function ingestReel(
     result = await classify({ caption, links }, await store.listCategoryNames());
   }
 
+  let providers: string[] | null = null;
+  if (result.kind === "movie" && result.title) {
+    const year = result.subtitle?.match(/\b(19|20)\d{2}\b/)?.[0] ?? null;
+    providers = await (deps.lookupProviders ?? tmdbProviders)(result.title, year);
+  }
+
   const category_id = await store.upsertCategory(result.category);
   const id = await store.insertReel({
     url,
@@ -139,6 +148,7 @@ export async function ingestReel(
     kind: result.kind,
     entity_title: result.title,
     entity_sub: result.subtitle,
+    providers,
     status: result.status,
   });
   return { id, status: result.status, duplicate: false, category: result.category };

@@ -10,12 +10,28 @@ describe("actionLinks", () => {
     ]);
   });
 
-  it("gives Netflix, Prime Video and YouTube for a movie or show", () => {
-    const links = actionLinks("movie", "Vivarium", "2019");
-    expect(links.map((l) => l.label)).toEqual(["Netflix", "Prime Video", "YouTube"]);
-    expect(links[0].url).toBe("https://www.netflix.com/search?q=Vivarium%202019");
-    expect(links[1].url).toBe("https://www.primevideo.com/search?phrase=Vivarium%202019");
-    expect(links[2].url).toBe("https://www.youtube.com/results?search_query=Vivarium%202019%20trailer");
+  it("shows only the service that has the movie", () => {
+    const links = actionLinks("movie", "Vivarium", "2019", ["netflix"]);
+    expect(links).toEqual([{ label: "Netflix", url: "https://www.netflix.com/search?q=Vivarium%202019" }]);
+    expect(actionLinks("movie", "Vivarium", "2019", ["prime"]).map((l) => l.label)).toEqual(["Prime Video"]);
+    expect(actionLinks("movie", "X", null, ["youtube"])[0].url).toBe("https://www.youtube.com/results?search_query=X%20full%20movie");
+  });
+
+  it("shows several only when several really have it", () => {
+    expect(actionLinks("movie", "X", null, ["netflix", "prime"]).map((l) => l.label)).toEqual(["Netflix", "Prime Video"]);
+  });
+
+  it("falls back to one 'Where to watch' link when availability is unknown or none", () => {
+    for (const p of [undefined, null, []]) {
+      const links = actionLinks("movie", "Vivarium", "2019", p);
+      expect(links).toHaveLength(1);
+      expect(links[0].label).toBe("Where to watch");
+      expect(links[0].url).toBe("https://www.justwatch.com/in/search?q=Vivarium%202019");
+    }
+  });
+
+  it("ignores unknown provider ids", () => {
+    expect(actionLinks("movie", "X", null, ["hbo"]).map((l) => l.label)).toEqual(["Where to watch"]);
   });
 
   it("gives a Google Maps link for a restaurant", () => {

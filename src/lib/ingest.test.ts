@@ -130,4 +130,22 @@ describe("ingestReel", () => {
     expect(store.reels[0].entity_title).toBe("Blinding Lights");
     expect(store.reels[0].entity_sub).toBe("The Weeknd");
   });
+
+  it("looks up where a movie really streams and stores only that", async () => {
+    const store = memoryStore();
+    const classify = vi.fn(async (): Promise<ClassifyResult> => ({ ...sorted("Movies"), kind: "movie", title: "Vivarium", subtitle: "2019" }));
+    const lookupProviders = vi.fn(async () => ["netflix"]);
+    await ingestReel({ url: "https://www.instagram.com/reel/MOV1/", caption: "watch vivarium" }, { store, classify, lookupProviders });
+    expect(lookupProviders).toHaveBeenCalledWith("Vivarium", "2019");
+    expect(store.reels[0].providers).toEqual(["netflix"]);
+  });
+
+  it("does not look up providers for songs", async () => {
+    const store = memoryStore();
+    const classify = vi.fn(async (): Promise<ClassifyResult> => ({ ...sorted("Music"), kind: "music", title: "X", subtitle: null }));
+    const lookupProviders = vi.fn(async () => ["netflix"]);
+    await ingestReel({ url: "https://www.instagram.com/reel/SONG2/", caption: "song" }, { store, classify, lookupProviders });
+    expect(lookupProviders).not.toHaveBeenCalled();
+    expect(store.reels[0].providers).toBeNull();
+  });
 });

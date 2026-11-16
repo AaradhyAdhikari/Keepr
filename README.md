@@ -18,6 +18,7 @@ Environment variables:
 | Name | Purpose |
 |------|---------|
 | `ANTHROPIC_API_KEY` | Claude API key for sorting and search |
+| `TMDB_API_KEY` | Free key from themoviedb.org. Used to check which streaming service (in India) really has a movie or show |
 | `DATABASE_URL` | Postgres connection string |
 | `APP_PASSCODE` | Passcode to open the app |
 | `SESSION_SECRET` | Long random string used to sign the login cookie |

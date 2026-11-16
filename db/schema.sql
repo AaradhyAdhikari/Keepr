@@ -28,6 +28,7 @@ alter table reels add column if not exists web_links text[] not null default '{}
 alter table reels add column if not exists kind text not null default 'other';
 alter table reels add column if not exists entity_title text;
 alter table reels add column if not exists entity_sub text;
+alter table reels add column if not exists providers text[];
 create index if not exists reels_search_idx on reels using gin (search);
 create index if not exists reels_category_idx on reels (category_id);
 

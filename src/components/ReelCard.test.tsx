@@ -16,7 +16,7 @@ const base: ReelView = {
   web_links: [],
   kind: "other",
   entity_title: null,
-  entity_sub: null,
+  entity_sub: null, providers: null,
   status: "sorted",
 };
 

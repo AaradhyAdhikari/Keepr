@@ -60,10 +60,10 @@ export default function ReelCard({ reel, children }: { reel: ReelView; children?
             ▶ YouTube
           </a>
         ))}
-        {actionLinks(reel.kind, reel.entity_title, reel.entity_sub).map((l) => (
+        {actionLinks(reel.kind, reel.entity_title, reel.entity_sub, reel.providers).map((l) => (
           <a key={l.url} href={l.url} target="_blank" rel="noopener noreferrer" style={{ ...pill, background: "#be185d" }}>
             {l.label === "Google Maps" ? "📍 " : "▶ "}
-            {l.label === "Google Maps" ? "Open in Google Maps" : `Open in ${l.label}`}
+            {l.label === "Google Maps" ? "Open in Google Maps" : l.label === "Where to watch" ? l.label : `Open in ${l.label}`}
           </a>
         ))}
         {(reel.web_links ?? []).map((l) => (
