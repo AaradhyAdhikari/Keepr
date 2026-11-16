@@ -7,8 +7,8 @@ Share a reel to Keepr from your phone and it reads the caption, files the reel i
 ## How it works
 
 - **Share target (PWA):** install Keepr on Android; it shows up in Instagram's Share menu.
-- **Sorting:** Claude (`claude-haiku-5-5`) picks an existing category, or proposes a new one. Low-confidence reels go to a `Review` pile instead of being guessed.
-- **Search:** Claude expands your query into related keywords, matched against tags in Postgres full-text search.
+- **Sorting:** A free OpenRouter model (default: the `openrouter/free` router) picks an existing category, or proposes a new one. Low-confidence reels go to a `Review` pile instead of being guessed.
+- **Search:** The same model expands your query into related keywords, matched against tags in Postgres full-text search.
 - **Private:** the whole app sits behind a single passcode.
 
 ## Setup
@@ -17,7 +17,8 @@ Environment variables:
 
 | Name | Purpose |
 |------|---------|
-| `ANTHROPIC_API_KEY` | Claude API key for sorting and search |
+| `OPENROUTER_API_KEY` | Free key from openrouter.ai. Free models allow 20 requests/min and 50/day (1,000/day after buying $10 of credits once) |
+| `OPENROUTER_MODELS` | Optional. Comma-separated model ids to try in order, e.g. `meta-llama/llama-3.3-70b-instruct:free`. Default `openrouter/free` |
 | `TMDB_API_KEY` | Free key from themoviedb.org. Used to check which streaming service (in India) really has a movie or show |
 | `DATABASE_URL` | Postgres connection string |
 | `APP_PASSCODE` | Passcode to open the app |

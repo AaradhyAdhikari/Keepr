@@ -1,6 +1,6 @@
-import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import type { Kind } from "./actions";
+import { openRouterClient } from "./openrouter";
 
 export type ClassifierClient = { complete(prompt: string): Promise<string> };
 
@@ -18,7 +18,6 @@ export type ClassifyResult = {
 
 export const REVIEW = "Review";
 export const MIN_CONFIDENCE = 0.6;
-export const MODEL = "claude-haiku-5-5";
 
 const Reply = z.object({
   category: z.string().min(1),
@@ -40,17 +39,7 @@ function entityOf(r: z.infer<typeof Reply>): { kind: Kind; title: string | null;
 }
 
 export function defaultClient(): ClassifierClient {
-  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  return {
-    async complete(prompt: string) {
-      const msg = await anthropic.messages.create({
-        model: MODEL,
-        max_tokens: 500,
-        messages: [{ role: "user", content: prompt }],
-      });
-      return msg.content.map((b) => (b.type === "text" ? b.text : "")).join("");
-    },
-  };
+  return openRouterClient();
 }
 
 export function extractJson(text: string): unknown {
