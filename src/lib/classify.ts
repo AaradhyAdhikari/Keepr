@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { Kind } from "./actions";
 import { openRouterClient } from "./openrouter";
+import { claudeClient } from "./anthropic";
 
 export type ClassifierClient = { complete(prompt: string): Promise<string> };
 
@@ -38,8 +39,9 @@ function entityOf(r: z.infer<typeof Reply>): { kind: Kind; title: string | null;
   return { kind, title, subtitle: r.subtitle?.trim() || null };
 }
 
+/** Claude by default. AI_PROVIDER=openrouter switches to free OpenRouter models. */
 export function defaultClient(): ClassifierClient {
-  return openRouterClient();
+  return process.env.AI_PROVIDER === "openrouter" ? openRouterClient() : claudeClient();
 }
 
 export function extractJson(text: string): unknown {
