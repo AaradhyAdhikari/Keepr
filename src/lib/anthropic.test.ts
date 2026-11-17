@@ -23,12 +23,17 @@ describe("claudeClient", () => {
   });
 });
 
-describe("defaultClient provider switch", () => {
-  it("uses Claude unless AI_PROVIDER=openrouter", async () => {
-    const f = vi.fn(async () => ({ ok: true, status: 200, json: async () => ({ content: [{ type: "text", text: "c" }], choices: [{ message: { content: "o" } }] }) }));
-    vi.stubGlobal("fetch", f);
-    vi.stubEnv("ANTHROPIC_API_KEY", "a"); vi.stubEnv("OPENROUTER_API_KEY", "b");
-    vi.stubEnv("AI_PROVIDER", "");
+describe("defaultClient provider choice", () => {
+  const f = () => vi.fn(async () => ({ ok: true, status: 200, json: async () => ({ content: [{ type: "text", text: "c" }], choices: [{ message: { content: "o" } }] }) }));
+  it("is free (OpenRouter) when there is no Claude key", async () => {
+    vi.stubGlobal("fetch", f());
+    vi.stubEnv("ANTHROPIC_API_KEY", ""); vi.stubEnv("OPENROUTER_API_KEY", "b"); vi.stubEnv("AI_PROVIDER", "");
+    expect(await defaultClient().complete("x")).toBe("o");
+    vi.unstubAllGlobals(); vi.unstubAllEnvs();
+  });
+  it("uses Claude when a Claude key is set, and AI_PROVIDER overrides", async () => {
+    vi.stubGlobal("fetch", f());
+    vi.stubEnv("ANTHROPIC_API_KEY", "a"); vi.stubEnv("OPENROUTER_API_KEY", "b"); vi.stubEnv("AI_PROVIDER", "");
     expect(await defaultClient().complete("x")).toBe("c");
     vi.stubEnv("AI_PROVIDER", "openrouter");
     expect(await defaultClient().complete("x")).toBe("o");

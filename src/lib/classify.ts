@@ -39,9 +39,11 @@ function entityOf(r: z.infer<typeof Reply>): { kind: Kind; title: string | null;
   return { kind, title, subtitle: r.subtitle?.trim() || null };
 }
 
-/** Claude by default. AI_PROVIDER=openrouter switches to free OpenRouter models. */
+/** Free by default (OpenRouter). Uses Claude only if ANTHROPIC_API_KEY is set; AI_PROVIDER=claude|openrouter forces one. */
 export function defaultClient(): ClassifierClient {
-  return process.env.AI_PROVIDER === "openrouter" ? openRouterClient() : claudeClient();
+  const forced = process.env.AI_PROVIDER;
+  const useClaude = forced ? forced === "claude" : !!process.env.ANTHROPIC_API_KEY;
+  return useClaude ? claudeClient() : openRouterClient();
 }
 
 export function extractJson(text: string): unknown {
